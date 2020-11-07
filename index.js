@@ -62,11 +62,22 @@ app.get('/createtask/:id', (req, res) => {
    try {
 
     getDealData(req.params.id).then(res => {
+
         let date = new Date(res.result.UF_CRM_1603984090)
-        let minutes = date.getMinutes()<10?'00':'' + date.getMinutes()
-        let day = `${date.getDate()}.${date.getMonth()}.${date.getFullYear()} в ${date.getHours()}:${minutes}`
+        let day = '';
+        console.log(date.getDate() == NaN);
+        console.log(isNaN(date.getDate()));
+        if (isNaN(date.getDate())) {
+             day = 'Крайний срок не установлен'
+        } else {
+           
+            let minutes = date.getMinutes()<10?'00':'' + date.getMinutes()
+             day = `${date.getDate()}.${date.getMonth()}.${date.getFullYear()} в ${date.getHours()}:${minutes}`
+        }
+        
+        let bx24chat_id = res.result.UF_CRM_1604751839
   
-        bot.sendMessage('-475117341', `Задача номер ${res.result.ID} \nПартия ${res.result.TITLE} \nDeadline: ${day} \n `, {
+        bot.sendMessage(bx24chat_id, `Задача номер ${res.result.ID} \nПартия: ${res.result.TITLE} \nDeadline: ${day} \n `, {
             reply_markup: {
                 inline_keyboard : [
                     [
@@ -145,14 +156,16 @@ bot.on('callback_query', query => {
     }
 
 })
-bot.on("polling_error", console.log);
+
 
 bot.onText(new RegExp('/CRM'), msg => {
-
+    console.log('Словили сообщение');
     bot.sendMessage(msg.chat.id, `ID чата: \n ${msg.chat.id}`)
 
 } )
 
+
+bot.on("polling_error", console.log);
 
 
 
