@@ -7,26 +7,17 @@ const app = express();
 const bitrix24 = new b24.Bitrix24({
     config: {
         mode: "webhook",
-        host: "https://b24-kw0ma7.bitrix24.ru",
+        host: "https://b24-kqfmgr.bitrix24.ru",
         user_id: "1",
-        code: "df4lf2cgqrwv0ace"
+        code: "2e7k3ydn2201tcrp"
     }
 }) 
 //Тут константы Битрикс24, а именно - статусы сделок в Битрикс
-const takeTaskStatusId = 2; // Задача принята
-const refuseToTakeTaskStatusId = 1;  // От задачи отказались
-const sentToCheckStatusId = 3;  //  Задачу отправили на проверку. 
-
-// Справочник сопоставления элементов Б24. 
+const takeTaskStatusId = 'C3:PREPAYMENT_INVOICE'; // Задача принята
+const refuseToTakeTaskStatusId = 'C3:NEW';  // От задачи отказались и она попала в бэклог
+const sentToCheckStatusId = 'C3:EXECUTING';  //  Задачу отправили на проверку. 
 
 
-const multyListElements = [
-    {'id':'50','value':'Элемент 1 '},
-    {'id':'52','value':'Элемент 2 '}
-]
-
-
-// res.result.UF_CRM_1602334412040
 
 
 // Тут функции пока что 
@@ -46,7 +37,6 @@ async function changeDealStatus(dealId, newStatus) {
             "STAGE_ID": newStatus
         }})
 
-        // const result = await bitrix24.callMethod("crm.deal.update", {id:2, fields:{"TITLE":"TITI"}})
         return result
     } catch (error) {
         console.log(error);
@@ -63,10 +53,6 @@ const TOKEN = config.get('token')
 const bot = new TelegramBot(TOKEN, {polling: true})
 
 app.listen(3000);
-app.get('/', (res, req) => {
-    console.log(res);
-})
-
 
 app.get('/createtask/:id', (req, res) => {
 
@@ -75,19 +61,8 @@ app.get('/createtask/:id', (req, res) => {
    try {
 
     getDealData(req.params.id).then(res => {
-    
-
-        const elementsListValues = res.result.UF_CRM_1602334412040.map(el => {
-      
-        let allVallues = []
-        multyListElements.forEach(element => {
-                if (element.id == el) {
-                   allVallues.push(element.value)
-                }
-            });
-            return allVallues
-         }) 
-        bot.sendMessage('-475117341', `Задача номер ${res.result.ID} \nDeadline: ${res.result.UF_CRM_1602334191383.substr(0,10)} \nList element: ${elementsListValues} \n `, {
+  
+        bot.sendMessage('-475117341', `Задача номер ${res.result.ID} \nПартия ${res.result.TITLE} \nDeadline: ${res.result.UF_CRM_1603984090} \n `, {
             reply_markup: {
                 inline_keyboard : [
                     [
@@ -124,11 +99,11 @@ app.get('/createtask/:id', (req, res) => {
 bot.on('callback_query', query => {
     const {message: {chat, message_id, text}} = query 
     let queryData = JSON.parse(query.data)
-    // console.log(queryData);
+ 
     switch (queryData.button) {
         case 'take_task':
-            changeDealStatus(queryData.b24dealId, takeTaskStatusId).then(res => console.log(res))
-            bot.editMessageText(`Задача принята`, {
+            changeDealStatus(queryData.b24dealId, takeTaskStatusId).then(res => console.log(res, 'res!'))
+            bot.editMessageText(`${text} \n\nЗадача принята`, {
                 chat_id:chat.id,
                 message_id:message_id,
                 reply_markup: {
@@ -149,7 +124,7 @@ bot.on('callback_query', query => {
             break;
         case 'refuse_to_take_task': 
         changeDealStatus(queryData.b24dealId, refuseToTakeTaskStatusId).then(res => console.log(res))
-            bot.editMessageText('Отказались от задачи', {
+            bot.editMessageText(`${text} \n\nЗадача отклонена`, {
                 chat_id:chat.id,
                 message_id:message_id
             })
@@ -158,7 +133,7 @@ bot.on('callback_query', query => {
         case 'sent_to_check': 
             // console.log(queryData);
             changeDealStatus(queryData.b24dealId, sentToCheckStatusId).then(res => console.log(res))
-            bot.editMessageText('Задача отправлена на доработку', {
+            bot.editMessageText(`${text} \n\nЗадача отправлена на проверку`, {
                 chat_id:chat.id,
                 message_id:message_id
             })
@@ -167,10 +142,12 @@ bot.on('callback_query', query => {
 
 })
 bot.on("polling_error", console.log);
-bot.onText(/\/start/, msg => {
-    bot.sendMessage(msg.chat.id, 'Ваши задачи!')
-    
-});
+
+bot.onText(new RegExp('/CRM'), msg => {
+
+    bot.sendMessage(msg.chat.id, `ID чата: \n ${msg.chat.id}`)
+
+} )
 
 
 
