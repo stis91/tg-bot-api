@@ -3,6 +3,7 @@ const config = require('config')
 const express = require('express');
 const { get } = require('config');
 const b24 = require('b24');
+const c = require('config');
 const app = express();
 const bitrix24 = new b24.Bitrix24({
     config: {
@@ -61,8 +62,11 @@ app.get('/createtask/:id', (req, res) => {
    try {
 
     getDealData(req.params.id).then(res => {
+        let date = new Date(res.result.UF_CRM_1603984090)
+        let minutes = date.getMinutes()<10?'00':'' + date.getMinutes()
+        let day = `${date.getDate()}.${date.getMonth()}.${date.getFullYear()} в ${date.getHours()}:${minutes}`
   
-        bot.sendMessage('-475117341', `Задача номер ${res.result.ID} \nПартия ${res.result.TITLE} \nDeadline: ${res.result.UF_CRM_1603984090} \n `, {
+        bot.sendMessage('-475117341', `Задача номер ${res.result.ID} \nПартия ${res.result.TITLE} \nDeadline: ${day} \n `, {
             reply_markup: {
                 inline_keyboard : [
                     [
