@@ -44,18 +44,14 @@ async function changeDealStatus(dealId, newStatus) {
     }
     
 }
-//
-// df4lf2cgqrwv0ace
-// sejiy77372@septicvernon.com 
-// septicvernon 
-// https://b24-kw0ma7.bitrix24.ru/stream/?current_fieldset=SOCSERV
+
 
 const TOKEN = config.get('token')
 const bot = new TelegramBot(TOKEN, {polling: true})
 
 app.listen(3000);
 
-app.get('/createtask/:id', (req, res) => {
+app.all('/createtask/:id', (req, res) => {
 
    
 
@@ -65,8 +61,6 @@ app.get('/createtask/:id', (req, res) => {
 
         let date = new Date(res.result.UF_CRM_1603984090)
         let day = '';
-        console.log(date.getDate() == NaN);
-        console.log(isNaN(date.getDate()));
         if (isNaN(date.getDate())) {
              day = 'Крайний срок не установлен'
         } else {
@@ -102,7 +96,7 @@ app.get('/createtask/:id', (req, res) => {
     })
     res.sendStatus(200);
    } catch (error) {
-       console.log(error);
+       console.log(error);  
        res.sendStatus(503);
    }
 
@@ -146,7 +140,6 @@ bot.on('callback_query', query => {
             
             break;
         case 'sent_to_check': 
-            // console.log(queryData);
             changeDealStatus(queryData.b24dealId, sentToCheckStatusId).then(res => console.log(res))
             bot.editMessageText(`${text} \n\nЗадача отправлена на проверку`, {
                 chat_id:chat.id,
