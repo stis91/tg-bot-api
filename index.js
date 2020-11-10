@@ -8,9 +8,9 @@ const app = express();
 const bitrix24 = new b24.Bitrix24({
     config: {
         mode: "webhook",
-        host: "https://b24-kqfmgr.bitrix24.ru",
+        host: "BX,
         user_id: "1",
-        code: "2e7k3ydn2201tcrp"
+        code: "API_KEY"
     }
 }) 
 //Тут константы Битрикс24, а именно - статусы сделок в Битрикс
